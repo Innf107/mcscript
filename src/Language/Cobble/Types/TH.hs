@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Language.Cobble.Types.TH where
 
@@ -35,4 +36,15 @@ deriveDefault ty = concat <$> sequence [
     ,   derivePassTypeable ''Data ty
     ,   [d|deriving instance Generic ($(conT ty) p)|]
     ]
+
+deriveInstanceReqs :: Q [Dec]
+deriveInstanceReqs = do
+    let instanceReqs = mkName "InstanceRequirements"
+    (FamilyI _ instances) <- reify instanceReqs
+    concat <$> forM instances \(TySynInstD (TySynEqn _ t _))-> do
+        case t of
+            AppT _ (AppT (ConT cname) (VarT _)) -> deriveDefault cname
+            _ -> pure []
+
+
 
