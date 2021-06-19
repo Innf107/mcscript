@@ -8,6 +8,7 @@ import Data.Generics.Uniplate.Data
 import Language.Cobble.Prelude
 
 import Language.Cobble.Types.AST
+import Language.Cobble.Types.Instances
 import Language.Cobble.Shared
 
 -- Defined here because the instances need

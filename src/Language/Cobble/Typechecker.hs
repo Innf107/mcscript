@@ -119,13 +119,10 @@ tcExpr = \case
 
         argSubst <- joinSubst =<< zipWithM mgu exprTypes (toList fargs)
 
-        if map (apply argSubst) exprTypes == map (apply argSubst) fargs
-        then pure $ FCall (Ext (apply argSubst retT)) l f' exprs'
-        else throw $ WrongFunArgs l (tryGetFunName f) fargs (toList exprTypes)
+        pure $ FCall (Ext (apply argSubst retT)) l f' exprs'
     If x l c th el -> do
         c' <- tcExpr c
         condSubst <- mgu (getType c') boolT
-        when (apply condSubst (getType c') /= apply condSubst boolT) $ throw $ WrongIfType l (getType c')
         th' <- apply condSubst <$> tcExpr th
         el' <- apply condSubst <$> tcExpr el
 
@@ -133,9 +130,7 @@ tcExpr = \case
         let c''  = apply resSubst c'
         let th'' = apply resSubst th'
         let el'' = apply resSubst el'
-        if (getType th'' == getType el'')
-        then pure (If (coerce x) l c'' th'' el'')
-        else throw $ DifferentIfETypes l (getType th'') (getType el'')
+        pure (If (coerce x) l c'' th'' el'')
     Var IgnoreExt l vname -> (\t -> Var (Ext t) l vname) <$> getVarType l vname
     Let IgnoreExt li d body -> Let IgnoreExt li
         <$> tcDecl d

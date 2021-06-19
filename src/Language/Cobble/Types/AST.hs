@@ -1,10 +1,11 @@
-{-# LANGUAGE TemplateHaskell#-}
 {-# LANGUAGE UndecidableInstances #-}
 module Language.Cobble.Types.AST where
 
 import Language.Cobble.Prelude hiding (TVar)
 import Language.Cobble.Util.Convert
 import Language.Cobble.Util.TypeUtils
+
+import Language.Cobble.Types.TH
 
 import Language.Cobble.Shared
 
@@ -32,11 +33,6 @@ data Module (p :: Pass) = Module
 
 
 type instance InstanceRequirements (Module p) = [XModule p, Name p, Statement p]
-
-deriving instance (AllC Show             (InstanceRequirements (Module p))) => Show    (Module p)
-deriving instance (AllC Eq               (InstanceRequirements (Module p))) => Eq      (Module p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (Module p))) => Data    (Module p)
-deriving instance                                                              Generic (Module p)
 
 type family XModule (p :: Pass)
 
@@ -73,11 +69,6 @@ data Statement (p :: Pass) =
 
 type instance InstanceRequirements (Statement p) = [XDef p, XImport p, XDefStruct p, XStatement p, Name p, Type p, Decl p]
 
-deriving instance (AllC Show             (InstanceRequirements (Statement p))) => Show    (Statement p)
-deriving instance (AllC Eq               (InstanceRequirements (Statement p))) => Eq      (Statement p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (Statement p))) => Data    (Statement p)
-deriving instance                                                                 Generic (Statement p)
-
 type family XDef            (p :: Pass)
 type family XParam          (p :: Pass)
 type family XImport         (p :: Pass)
@@ -88,10 +79,6 @@ type family XStatement      (p :: Pass)
 data Decl (p :: Pass) = Decl (XDecl p) (Name p) (XParam p) (Expr p)
 
 type instance InstanceRequirements (Decl p) = [XDecl p, Name p, XParam p, Expr p]
-deriving instance (AllC Show             (InstanceRequirements (Decl p))) => Show    (Decl p)
-deriving instance (AllC Eq               (InstanceRequirements (Decl p))) => Eq      (Decl p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (Decl p))) => Data    (Decl p)
-deriving instance                                                            Generic (Decl p)
 
 type family XDecl (p :: Pass)
 
@@ -108,11 +95,6 @@ data Expr (p :: Pass) =
 
 type instance InstanceRequirements (Expr p) = [XFCall p, XIntLit p, XIf p, XLet p, Decl p, XVar p, Name p,
         XStructConstruct p, XStructAccess p, XExpr p]
-
-deriving instance (AllC Show             (InstanceRequirements (Expr p))) => Show    (Expr p)
-deriving instance (AllC Eq               (InstanceRequirements (Expr p))) => Eq      (Expr p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (Expr p))) => Data    (Expr p)
-deriving instance                                                            Generic (Expr p)
 
 type family XFCall           (p :: Pass)
 type family XIntLit          (p :: Pass)
@@ -136,17 +118,6 @@ data TVar (p :: Pass) = MkTVar (Name p) (XKind p)
 
 type instance InstanceRequirements (Type p) = [Name p, XKind p, TVar p]
 type instance InstanceRequirements (TVar p) = [Name p, XKind p]
-
-deriving instance (AllC Show             (InstanceRequirements (Type p))) => Show    (Type p)
-deriving instance (AllC Eq               (InstanceRequirements (Type p))) => Eq      (Type p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (Type p))) => Data    (Type p)
-deriving instance                                                            Generic (Type p)
-
-deriving instance (AllC Show             (InstanceRequirements (TVar p))) => Show    (TVar p)
-deriving instance (AllC Eq               (InstanceRequirements (TVar p))) => Eq      (TVar p)
-deriving instance (AllC Ord              (InstanceRequirements (TVar p))) => Ord     (TVar p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (TVar p))) => Data    (TVar p)
-deriving instance                                                            Generic (TVar p)
 
 (-:>) :: (TyLit (Name p), IsKind (XKind p)) => Type p -> Type p -> Type p
 t1 -:> t2 = TApp (TApp (TCon tyFunT (kFun kStar (kFun kStar kStar))) t1) t2
@@ -187,12 +158,6 @@ data StructDef p = StructDef {
     }
 
 type instance InstanceRequirements (StructDef p) = [Name p, Type p]
-
-deriving instance (AllC Show             (InstanceRequirements (StructDef p))) => Show    (StructDef p)
-deriving instance (AllC Eq               (InstanceRequirements (StructDef p))) => Eq      (StructDef p)
-deriving instance (Typeable p, AllC Data (InstanceRequirements (StructDef p))) => Data    (StructDef p)
-deriving instance                                                                 Generic (StructDef p)
-
 
 instance S.Show Kind where
     show KStar = "*"
